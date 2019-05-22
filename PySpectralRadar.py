@@ -94,30 +94,30 @@ class AcquisitionType(CEnum):
 
 class ProcessingFlag(CEnum):
 
-		Processing_UseOffsetErrors = 0
-		Processing_RemoveDCSpectrum = 1
-		Processing_RemoveAdvancedDCSpectrum = 2
-		Processing_UseApodization = 3
-		Processing_UseScanForApodization = 4
-		Processing_UseUndersamplingFilter = 5
-		Processing_UseDispersionCompensation = 6
-		Processing_UseDechirp = 7
-		Processing_UseExtendedAdjust = 8
-		Processing_FullRangeOutput = 9
-		Processing_FilterDC = 10
-		Processing_UseAutocorrCompensation = 11
-		Processing_UseDEFR = 12
-		Processing_OnlyWindowing = 13
-		Processing_RemoveFixedPattern = 14
+	Processing_UseOffsetErrors = 0
+	Processing_RemoveDCSpectrum = 1
+	Processing_RemoveAdvancedDCSpectrum = 2
+	Processing_UseApodization = 3
+	Processing_UseScanForApodization = 4
+	Processing_UseUndersamplingFilter = 5
+	Processing_UseDispersionCompensation = 6
+	Processing_UseDechirp = 7
+	Processing_UseExtendedAdjust = 8
+	Processing_FullRangeOutput = 9
+	Processing_FilterDC = 10
+	Processing_UseAutocorrCompensation = 11
+	Processing_UseDEFR = 12
+	Processing_OnlyWindowing = 13
+	Processing_RemoveFixedPattern = 14
 
 class ProbeParameterInt(CEnum):
 
-        Probe_ApodizationCycles = 0
-        Probe_Oversampling = 1
-        Probe_WhiteBalanceAutomatic = 2
-        Probe_Oversampling_SlowAxis = 3
-        Probe_SpeckleReduction = 4
-        Probe_MaxScanRangeShape = 5
+    Probe_ApodizationCycles = 0
+    Probe_Oversampling = 1
+    Probe_WhiteBalanceAutomatic = 2
+    Probe_Oversampling_SlowAxis = 3
+    Probe_SpeckleReduction = 4
+    Probe_MaxScanRangeShape = 5
 
 #Wrapper functions ------------------------------------------------------------
 
@@ -137,8 +137,8 @@ def initDevice():
     return SpectralRadar.initDevice()
 
 def initProbe(Dev,ProbeFile):
-    SpectralRadar.initProbe.restype = ProbeHandle
     SpectralRadar.initProbe.argtypes = [DeviceHandle, C.c_char_p]
+    SpectralRadar.initProbe.restype = ProbeHandle
     return SpectralRadar.initProbe(Dev,ProbeFile)
 
 def createProcessingForDevice(Dev):
@@ -146,10 +146,23 @@ def createProcessingForDevice(Dev):
     SpectralRadar.createProcessingForDevice.restype = [ProcessingHandle]
     return SpectralRadar.createProcessingForDevice(Dev)
 
+def setProcessingOutput(Proc,Spectrum):
+    SpectralRadar.setProcessingOutput.argtypes = [ProcessingHandle,DataHandle]
+    return SpectralRadar.setProcessingOutput(Proc,Spectrum)
+
+def executeProcessing(Proc,RawData):
+    SpectralRadar.executeProcessing.argtypes = [ProcessingHandle,RawDataHandle]
+    SpectralRadar.executeProcessing(Proc,RawData)
+    return SpectralRadar.executeProcessing(Proc,RawData)
+
 def createBScanPattern(Probe,Range,AScans,apodization):
-    SpectralRadar.createBScanPattern.restype = ScanPatternHandle
     SpectralRadar.createBScanPattern.argtypes = [ProbeHandle,C.c_double,C.c_int,BOOL]
+    SpectralRadar.createBScanPattern.restype = ScanPatternHandle
     return SpectralRadar.createBScanPattern(Probe,Range,AScans,apodization)
+
+def createData():
+    SpectralRadar.createData.restype = DataHandle
+    return SpectralRadar.createData()
 
 def createRawData():
     SpectralRadar.createRawData.restypes = RawDataHandle
@@ -165,6 +178,17 @@ def getRawDataEx(Dev,RawData,CameraIdx):
     SpectralRadar.getRawData.restype = RawDataHandle
     return SpectralRadar.getRawDataEx(Dev,RawData,CameraIdx)
 
+def getDataPropertyInt(Data,Selection):
+    SpectralRadar.getDataPropertyInt.argtypes = [DataHandle,DataPropertyInt]
+    SpectralRadar.getDataPropertyInt(Data,Selection)
+
+
+#Rewrite. This is not useful
+# def copyDataContent(DataSource,Destination):
+#     SpectralRadar.copyDataContent.argtypes = [DataHandle,RETURNS float* !!!! UH OH]
+#
+#     SpectralRadarDemo.copyDataContent(DataSource,Destination)
+
 def startMeasurement(Dev,Pattern,Type): #Note: named lowercase 'type' in C, which is reserved in Python
     SpectralRadar.startMeasurement.argtypes = [DeviceHandle,ScanPatternHandle,AcquisitionType]
     return SpectralRadar.startMeasurement(Dev,Pattern,Type)
@@ -179,6 +203,12 @@ def setProcessingFlag(Proc,Flag,Value):
 
 def setProbeParameterInt(Probe,Selection,Value):
     SpectralRadar.setProbeParameterInt.argtypes = [ProbeHandle,ProbeParameterInt,C.c_int]
+    return SpectralRadar.setProbeParameterInt(Probe,Selection,Value)
+
+def setCameraPreset(Dev,Probe,Proc,Preset):
+    SpectralRadar.setCameraPreset.argtypes = [DeviceHandle,ProbeHandle,ProcessingHandle,C.c_int]
+    return SpectralRadar.setCameraPreset(Dev,Probe,Proc,Preset)
+
 
 
 probeName = 'ProbeLKM10'
