@@ -237,8 +237,46 @@ def setCameraPreset(Dev,Probe,Proc,Preset):
 
 # Bridge code ------------------------------------------------------------------
 
-size0 = getDataPropertyInt()
-size1 = getDataPropertyInt()
+import numpy.ctypeslib.as_array
+
+
+def make_nd_array(c_pointer, shape, dtype=np.float64, order='C', own_data=True):
+    '''
+    Uses buffer to convert from c_void_p type to a numpy array. Defaults to float64
+    Thanks to wordy: https://stackoverflow.com/a/33837141/11540004
+    '''
+    arr_size = np.prod(shape[:]) * np.dtype(dtype).itemsize
+    if sys.version_info.major >= 3:
+        buf_from_mem = ctypes.pythonapi.PyMemoryView_FromMemory
+        buf_from_mem.restype = ctypes.py_object
+        buf_from_mem.argtypes = (ctypes.c_void_p, ctypes.c_int, ctypes.c_int)
+        buffer = buf_from_mem(c_pointer, arr_size, 0x100)
+    else:
+        buf_from_mem = ctypes.pythonapi.PyBuffer_FromMemory
+        buf_from_mem.restype = ctypes.py_object
+        buffer = buf_from_mem(c_pointer, arr_size)
+    arr = np.ndarray(tuple(shape[:]), dtype, buffer, order=order)
+    if own_data and not arr.flags.owndata:
+        return arr.copy()
+    else:
+        return arr
+
+def DataToNumpyArray(Data):
+    size0 = getDataPropertyInt(Data,0).value
+    size1 = getDataPropertyInt(Data,1).value
+    arrC = C.c_float*size0*size1
+    SpectralRadar.copyDataContent.argtypes = [DataHandle,c_float*size0*size1]
+    SpectralRadar.copyDataContent(Data,arrC)
+    return as_array(arrC)
+
+def RawDataToNumpyArray(RawData):
+    size0 = getRawDataPropertyInt(RawData,0).value
+    size1 = getRawDataPropertyInt(RawData,1).value
+    arrC = C.c_float*size0*size1
+    SpectralRadar.copyRawDataContent.argtypes = [RawDataHandle,c_float*size0*size1]
+    SpectralRadar.copyRawDataContent(RawData,arrC)
+    return as_array(arrC)
+
 
 
 # Testing ----------------------------------------------------------------------
