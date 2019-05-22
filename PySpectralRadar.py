@@ -157,13 +157,14 @@ def initDevice():
     return SpectralRadar.initDevice()
 
 def initProbe(Dev,ProbeFile):
+    ProbeFile = C.c_char_p(ProbeFile.encode('utf-8'))
     SpectralRadar.initProbe.argtypes = [DeviceHandle, C.c_char_p]
     SpectralRadar.initProbe.restype = ProbeHandle
     return SpectralRadar.initProbe(Dev,ProbeFile)
 
 def createProcessingForDevice(Dev):
     SpectralRadar.createProcessingForDevice.argtypes = [DeviceHandle]
-    SpectralRadar.createProcessingForDevice.restype = [ProcessingHandle]
+    SpectralRadar.createProcessingForDevice.restype = ProcessingHandle
     return SpectralRadar.createProcessingForDevice(Dev)
 
 def setProcessingOutput(Proc,Spectrum):
@@ -228,38 +229,30 @@ def setCameraPreset(Dev,Probe,Proc,Preset):
     SpectralRadar.setCameraPreset.argtypes = [DeviceHandle,ProbeHandle,ProcessingHandle,C.c_int]
     return SpectralRadar.setCameraPreset(Dev,Probe,Proc,Preset)
 
-
-#Rewrite. This is not useful
-# def copyDataContent(DataSource,Destination):
-#     SpectralRadar.copyDataContent.argtypes = [DataHandle,RETURNS float* !!!! UH OH]
-#
-#     SpectralRadarDemo.copyDataContent(DataSource,Destination)
-
 # Bridge code ------------------------------------------------------------------
 
-import numpy.ctypeslib.as_array
+import numpy.ctypeslib
 
-
-def make_nd_array(c_pointer, shape, dtype=np.float64, order='C', own_data=True):
-    '''
-    Uses buffer to convert from c_void_p type to a numpy array. Defaults to float64
-    Thanks to wordy: https://stackoverflow.com/a/33837141/11540004
-    '''
-    arr_size = np.prod(shape[:]) * np.dtype(dtype).itemsize
-    if sys.version_info.major >= 3:
-        buf_from_mem = ctypes.pythonapi.PyMemoryView_FromMemory
-        buf_from_mem.restype = ctypes.py_object
-        buf_from_mem.argtypes = (ctypes.c_void_p, ctypes.c_int, ctypes.c_int)
-        buffer = buf_from_mem(c_pointer, arr_size, 0x100)
-    else:
-        buf_from_mem = ctypes.pythonapi.PyBuffer_FromMemory
-        buf_from_mem.restype = ctypes.py_object
-        buffer = buf_from_mem(c_pointer, arr_size)
-    arr = np.ndarray(tuple(shape[:]), dtype, buffer, order=order)
-    if own_data and not arr.flags.owndata:
-        return arr.copy()
-    else:
-        return arr
+# def make_nd_array(c_pointer, shape, dtype=np.float64, order='C', own_data=True):
+#     '''
+#     Uses buffer to convert from c_void_p type to a numpy array. Defaults to float64
+#     Thanks to wordy: https://stackoverflow.com/a/33837141/11540004
+#     '''
+#     arr_size = np.prod(shape[:]) * np.dtype(dtype).itemsize
+#     if sys.version_info.major >= 3:
+#         buf_from_mem = ctypes.pythonapi.PyMemoryView_FromMemory
+#         buf_from_mem.restype = ctypes.py_object
+#         buf_from_mem.argtypes = (ctypes.c_void_p, ctypes.c_int, ctypes.c_int)
+#         buffer = buf_from_mem(c_pointer, arr_size, 0x100)
+#     else:
+#         buf_from_mem = ctypes.pythonapi.PyBuffer_FromMemory
+#         buf_from_mem.restype = ctypes.py_object
+#         buffer = buf_from_mem(c_pointer, arr_size)
+#     arr = np.ndarray(tuple(shape[:]), dtype, buffer, order=order)
+#     if own_data and not arr.flags.owndata:
+#         return arr.copy()
+#     else:
+#         return arr
 
 def DataToNumpyArray(Data):
     size0 = getDataPropertyInt(Data,0).value
@@ -277,20 +270,18 @@ def RawDataToNumpyArray(RawData):
     SpectralRadar.copyRawDataContent(RawData,arrC)
     return as_array(arrC)
 
-
-
 # Testing ----------------------------------------------------------------------
 
 probeName = 'ProbeLKM10'
 
-from time import Sleep
+from time import sleep
 
 print('Attempting to initialize device...')
 device = initDevice() #Will crash kernel if not connected to DAQ
 sleep(2)
 
 print('Attempting to create processing routine for device...')
-proc = createProcessingForDevice(dev)
+proc = createProcessingForDevice(device)
 sleep(2)
 
 print('Attempting to create probe for device...')
@@ -302,5 +293,5 @@ raw = createRawData()
 sleep(2)
 
 print('Attempting to assign acquisition type...')
-acquisitionType = AcquisitionType()
+#acquisitionType = AcquisitionType()
 sleep(2)
