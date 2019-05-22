@@ -119,6 +119,26 @@ class ProbeParameterInt(CEnum):
     Probe_SpeckleReduction = 4
     Probe_MaxScanRangeShape = 5
 
+class DataPropertyInt(CEnum):
+
+	Data_Dimensions = 0
+	Data_Size1 = 1
+	Data_Size2 = 2
+	Data_Size3 = 3
+	Data_NumberOfElements = 4
+	Data_SizeInBytes = 5
+	Data_BytesPerElement = 6
+
+class RawDataPropertyInt(CEnum):
+
+	RawData_Size1 = 0
+	RawData_Size2 = 1
+	RawData_Size3 = 2
+	RawData_NumberOfElements = 3
+	RawData_SizeInBytes = 4
+	RawData_BytesPerElement = 5
+	RawData_LostFrames = 6
+
 #Wrapper functions ------------------------------------------------------------
 
 '''
@@ -180,14 +200,13 @@ def getRawDataEx(Dev,RawData,CameraIdx):
 
 def getDataPropertyInt(Data,Selection):
     SpectralRadar.getDataPropertyInt.argtypes = [DataHandle,DataPropertyInt]
-    SpectralRadar.getDataPropertyInt(Data,Selection)
+    SpectralRadar.getDataPropertyInt.restype = C.c_int
+    return SpectralRadar.getDataPropertyInt(Data,Selection)
 
-
-#Rewrite. This is not useful
-# def copyDataContent(DataSource,Destination):
-#     SpectralRadar.copyDataContent.argtypes = [DataHandle,RETURNS float* !!!! UH OH]
-#
-#     SpectralRadarDemo.copyDataContent(DataSource,Destination)
+def getRawDataPropertyInt(RawData,Selection):
+    SpectralRadar.getDataPropertyInt.argtypes = [RawDataHandle,RawDataPropertyInt]
+    SpectralRadar.getDataPropertyInt.restype = C.c_int
+    return SpectralRadar.getDataPropertyInt(RawData,Selection)
 
 def startMeasurement(Dev,Pattern,Type): #Note: named lowercase 'type' in C, which is reserved in Python
     SpectralRadar.startMeasurement.argtypes = [DeviceHandle,ScanPatternHandle,AcquisitionType]
@@ -210,10 +229,21 @@ def setCameraPreset(Dev,Probe,Proc,Preset):
     return SpectralRadar.setCameraPreset(Dev,Probe,Proc,Preset)
 
 
+#Rewrite. This is not useful
+# def copyDataContent(DataSource,Destination):
+#     SpectralRadar.copyDataContent.argtypes = [DataHandle,RETURNS float* !!!! UH OH]
+#
+#     SpectralRadarDemo.copyDataContent(DataSource,Destination)
 
-probeName = 'ProbeLKM10'
+# Bridge code ------------------------------------------------------------------
+
+size0 = getDataPropertyInt()
+size1 = getDataPropertyInt()
+
 
 # Testing ----------------------------------------------------------------------
+
+probeName = 'ProbeLKM10'
 
 from time import Sleep
 
