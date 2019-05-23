@@ -10,11 +10,12 @@ Python wrapper for Thorlabs SpectralRadar SDK
 
 import ctypes as C
 from enum import IntEnum
+import numpy as np
 
 #Imports SpectralRadar libraries. Thorlabs software must be installed on machine
 SpectralRadar = C.CDLL('SpectralRadar')
 
-#Wrapper typedefs --------------------------------------------------------------
+# Wrapper typedefs ------------------------------------------------------------
 
 class BOOL(C.c_int):
     pass
@@ -22,7 +23,7 @@ class BOOL(C.c_int):
 class ComplexFloat(C.Structure):
     _fields_=[("data",C.c_float*2)]
 
-#Pointer typedefs --------------------------------------------------------------
+# Pointer typedefs ------------------------------------------------------------
 
 class RawDataStruct(C.Structure):
     pass
@@ -74,7 +75,17 @@ class ProbeStruct(C.Structure):
 
 ProbeHandle = C.POINTER(ProbeStruct)
 
-# Enum typedefs ----------------------------------------------------------------
+class BufferStruct(C.Structure):
+    pass
+
+BufferHandle = C.POINTER(MemoryBufferStruct)
+
+class ColoredDataStruct(C.Structure):
+    pass
+
+ColoredDataHandle = C.POINTER(ColoredDataStruct)
+
+# Enum typedefs ---------------------------------------------------------------
 
 class CEnum(IntEnum):
     """
@@ -138,6 +149,44 @@ class RawDataPropertyInt(CEnum):
 	RawData_SizeInBytes = 4
 	RawData_BytesPerElement = 5
 	RawData_LostFrames = 6
+
+class Data1DExportFormat(CEnum):
+
+    Data1DExport_RAW = 0
+	Data1DExport_TXT = 1
+	Data1DExport_CSV = 2
+	Data1DExport_TableTXT = 3
+	Data1DExport_Fits = 4
+
+class Data2DExportFormat(CEnum):
+
+	Data2DExport_SRM = 0
+	Data2DExport_RAW = 1
+	Data2DExport_TXT = 2
+	Data2DExport_CSV = 3
+	Data2DExport_TableTXT = 4
+	Data2DExport_Fits = 5
+
+class Data3DExportFormat(CEnum):
+
+	Data3DExport_SRM = 0
+	Data3DExport_RAW = 1
+	Data3DExport_TXT = 2
+	Data3DExport_CSV = 3
+	Data3DExport_VFF = 4
+	Data3DExport_VTK = 5
+	Data3DExport_Fits = 6
+	Data3DExport_TIFF = 7
+
+class ComplexDataExportFormat(CEnum):
+
+    ComplexDataExport_RAW = 0
+
+class RawDataExportFormat(CEnum):
+
+	RawDataExport_RAW = 0
+	RawDataExport_SRR = 1
+
 
 #Wrapper functions ------------------------------------------------------------
 
@@ -217,6 +266,26 @@ def stopMeasurement(Dev):
     SpectralRadar.stopMeasurement.argtypes = [DeviceHandle]
     return SpectralRadar.stopMeasurement(Dev)
 
+def closeDevice(Dev):
+    SpectralRadar.closeDevice.argtypes = [DeviceHandle]
+    return SpectralRadar.closeDevice(Dev)
+
+def closeProcessing(Proc):
+    SpectralRadar.closeProcessing.argtypes = [ProcessingHandle]
+    return SpectralRadar.closeProcessing(Proc)
+
+def clearData(Data):
+    SpectralRadar.clearData.argtypes = [DataHandle]
+    return SpectralRadar.clearData(Data)
+
+def clearRawData(RawData):
+    SpectralRadar.clearRawData.argtypes = [RawDataHandle]
+    return SpectralRadar.clearRawData(RawData)
+
+def clearComplexData(ComplexData):
+    SpectralRadar.clearComplexData.argtypes = [ComplexDataHandle]
+    return SpectralRadar.clearComplexData(ComplexData)
+
 def setProcessingFlag(Proc,Flag,Value):
     SpectralRadar.setProcessingFlag.argtypes = [ProcessingHandle,ProcessingFlag,BOOL]
     return SpectralRadar.setProcessingFlag(Proc,Flag,Value)
@@ -229,69 +298,72 @@ def setCameraPreset(Dev,Probe,Proc,Preset):
     SpectralRadar.setCameraPreset.argtypes = [DeviceHandle,ProbeHandle,ProcessingHandle,C.c_int]
     return SpectralRadar.setCameraPreset(Dev,Probe,Proc,Preset)
 
+def createMemoryBuffer():
+    SpectralRadar.createMemoryBuffer.restype = BufferHandle
+    return SpectralRadar.createMemoryBuffer()
+
+def appendToBuffer(Buffer,Data,ColoredData):
+    SpectralRadar.appendToBuffer.argtypes = [BufferHandle,DataHandle,ColoredDataHandle]
+    return SpectralRadar.appendToBuffer(Buffer,Data,ColoredData)
+
+def clearBuffer(Buffer):
+    SpectralRadar.clearBuffer.argtypes = [BufferHandle]
+    return SpectralRadar.clearBuffer(Buffer)
+
+def exportData1D(Data,Format,Path):
+    SpectralRadar.exportData1D.argtypes = [DataHandle,Data1DExportFormat,C.POINTER(C.c_char)]
+    return SpectralRadar.exportData1D(Data,Format,Path)
+
+def exportData2D(Data,Format,Path):
+    SpectralRadar.exportData2D.argtypes = [DataHandle,Data2DExportFormat,C.POINTER(C.c_char)]
+    return SpectralRadar.exportData2D(Data,Format,Path)
+
+def exportData3D(Data,Format,Path):
+    SpectralRadar.exportData3D.argtypes = [DataHandle,Data3DExportFormat,C.POINTER(C.c_char)]
+    return SpectralRadar.exportData3D(Data,Format,Path)
+
 # Bridge code ------------------------------------------------------------------
 
-import numpy.ctypeslib
-
-# def make_nd_array(c_pointer, shape, dtype=np.float64, order='C', own_data=True):
-#     '''
-#     Uses buffer to convert from c_void_p type to a numpy array. Defaults to float64
-#     Thanks to wordy: https://stackoverflow.com/a/33837141/11540004
-#     '''
-#     arr_size = np.prod(shape[:]) * np.dtype(dtype).itemsize
-#     if sys.version_info.major >= 3:
-#         buf_from_mem = ctypes.pythonapi.PyMemoryView_FromMemory
-#         buf_from_mem.restype = ctypes.py_object
-#         buf_from_mem.argtypes = (ctypes.c_void_p, ctypes.c_int, ctypes.c_int)
-#         buffer = buf_from_mem(c_pointer, arr_size, 0x100)
-#     else:
-#         buf_from_mem = ctypes.pythonapi.PyBuffer_FromMemory
-#         buf_from_mem.restype = ctypes.py_object
-#         buffer = buf_from_mem(c_pointer, arr_size)
-#     arr = np.ndarray(tuple(shape[:]), dtype, buffer, order=order)
-#     if own_data and not arr.flags.owndata:
-#         return arr.copy()
-#     else:
-#         return arr
-
 def DataToNumpyArray(Data):
-    size0 = getDataPropertyInt(Data,0).value
-    size1 = getDataPropertyInt(Data,1).value
-    arrC = C.c_float*size0*size1
-    SpectralRadar.copyDataContent.argtypes = [DataHandle,c_float*size0*size1]
+    '''
+    Returns numpy array from DataHandle object. Might work once the array has
+    actual dimensions, definitely doesn't when array has size 0.
+    '''
+    data = createData()
+    size0 = getDataPropertyInt(Data,0)
+    size1 = getDataPropertyInt(Data,1)
+    npArr = np.zeros((size0,size1),dtype='float32')
+    arrC = np.ctypeslib.as_ctypes(npArr)
+    SpectralRadar.copyDataContent.argtypes = [DataHandle,C.POINTER(C.c_float*size0*size1)]
     SpectralRadar.copyDataContent(Data,arrC)
-    return as_array(arrC)
+    if size0 > 0:
+        return np.ctypeslib.as_array(arrC)
 
-def RawDataToNumpyArray(RawData):
-    size0 = getRawDataPropertyInt(RawData,0).value
-    size1 = getRawDataPropertyInt(RawData,1).value
-    arrC = C.c_float*size0*size1
-    SpectralRadar.copyRawDataContent.argtypes = [RawDataHandle,c_float*size0*size1]
-    SpectralRadar.copyRawDataContent(RawData,arrC)
-    return as_array(arrC)
+#RawData version undefined
 
 # Testing ----------------------------------------------------------------------
 
 probeName = 'ProbeLKM10'
 
 from time import sleep
+waitTime = 0.2
 
 print('Attempting to initialize device...')
 device = initDevice() #Will crash kernel if not connected to DAQ
-sleep(2)
+sleep(waitTime)
 
 print('Attempting to create processing routine for device...')
 proc = createProcessingForDevice(device)
-sleep(2)
+sleep(waitTime)
 
 print('Attempting to create probe for device...')
 probe = initProbe(device,probeName)
-sleep(2)
+sleep(waitTime)
 
-print('Attempting to create raw data instance')
-raw = createRawData()
-sleep(2)
+print('Attempting to create data instance...')
+data = createData()
+sleep(waitTime)
 
 print('Attempting to assign acquisition type...')
 #acquisitionType = AcquisitionType()
-sleep(2)
+sleep(waitTime)
