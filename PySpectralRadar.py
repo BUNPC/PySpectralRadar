@@ -78,7 +78,7 @@ ProbeHandle = C.POINTER(ProbeStruct)
 class BufferStruct(C.Structure):
     pass
 
-BufferHandle = C.POINTER(MemoryBufferStruct)
+BufferHandle = C.POINTER(BufferStruct)
 
 class ColoredDataStruct(C.Structure):
     pass
@@ -153,10 +153,10 @@ class RawDataPropertyInt(CEnum):
 class Data1DExportFormat(CEnum):
 
     Data1DExport_RAW = 0
-	Data1DExport_TXT = 1
-	Data1DExport_CSV = 2
-	Data1DExport_TableTXT = 3
-	Data1DExport_Fits = 4
+    Data1DExport_TXT = 1
+    Data1DExport_CSV = 2
+    Data1DExport_TableTXT = 3
+    Data1DExport_Fits = 4
 
 class Data2DExportFormat(CEnum):
 
@@ -187,6 +187,17 @@ class RawDataExportFormat(CEnum):
 	RawDataExport_RAW = 0
 	RawDataExport_SRR = 1
 
+class direction(CEnum):
+
+    Direction_1 = 0
+    Direction_2 = 1
+    Direction_3 = 2
+
+class Device_TriggerType(CEnum):
+
+    Trigger_FreeRunning = 0
+    Trigger_TrigBoard_ExternalStart = 1
+    Trigger_External_AScan = 2
 
 #Wrapper functions ------------------------------------------------------------
 
@@ -220,10 +231,19 @@ def setProcessingOutput(Proc,Spectrum):
     SpectralRadar.setProcessingOutput.argtypes = [ProcessingHandle,DataHandle]
     return SpectralRadar.setProcessingOutput(Proc,Spectrum)
 
+def setComplexDataOutput(Proc,Complex):
+    SpectralRadar.setComplexDataOutput.argtypes = [ProcessingHandle,ComplexDataHandle]
+    return SpectralRadar.setComplexDataOutput(Proc,Complex)
+
 def executeProcessing(Proc,RawData):
     SpectralRadar.executeProcessing.argtypes = [ProcessingHandle,RawDataHandle]
     SpectralRadar.executeProcessing(Proc,RawData)
     return SpectralRadar.executeProcessing(Proc,RawData)
+
+def createNoScanPattern(Probe,Scans,NumberOfScans):
+    SpectralRadar.createNoScanPattern.argtypes = [ProbeHandle,C.c_int,C.c_int]
+    SpectralRadar.createNoScanPattern.restype = ScanPatternHandle
+    return SpectralRadar.createNoScanPattern(Probe,Scans,NumberOfScans)
 
 def createBScanPattern(Probe,Range,AScans,apodization):
     SpectralRadar.createBScanPattern.argtypes = [ProbeHandle,C.c_double,C.c_int,BOOL]
@@ -238,10 +258,18 @@ def createRawData():
     SpectralRadar.createRawData.restypes = RawDataHandle
     return SpectralRadar.createRawData()
 
+def createComplexData():
+    SpectralRadar.restypes = ComplexDataHandle
+    return SpectralRadar.createComplexData()
+
 def getRawData(Dev,RawData):
     SpectralRadar.getRawData.argtypes = [DeviceHandle,RawDataHandle]
     SpectralRadar.getRawData.restype = RawDataHandle
     return SpectralRadar.getRawData(Dev,RawData)
+
+def appendRawData(Data,DataToAppend,Direction):
+    SpectralRadar.appendRawData.argtypes = [RawDataHandle,RawDataHandle,Direction]
+    return SpectralRadar.appendRawData(Data,DataToAppend,Direction)
 
 def getRawDataEx(Dev,RawData,CameraIdx):
     SpectralRadar.getRawDataEx.argtypes = [DeviceHandle,RawDataHandle,C.c_int]
@@ -298,6 +326,14 @@ def setCameraPreset(Dev,Probe,Proc,Preset):
     SpectralRadar.setCameraPreset.argtypes = [DeviceHandle,ProbeHandle,ProcessingHandle,C.c_int]
     return SpectralRadar.setCameraPreset(Dev,Probe,Proc,Preset)
 
+def setTriggerMode(Dev,TriggerMode):
+    SpectralRadar.setTriggerMode.argtypes = [DeviceHandle,Device_TriggerType]
+    return SpectralRadar.setTriggerMode(Dev,TriggerMode)
+
+def setTriggerTimeoutSec(Dev,Timeout):
+    SpectralRadar.setTriggerTimeoutSec.argtypes = [DeviceHandle,C.c_int]
+    return SpectralRadar.setTriggerTimeoutSec(Dev,Timeout)
+
 def createMemoryBuffer():
     SpectralRadar.createMemoryBuffer.restype = BufferHandle
     return SpectralRadar.createMemoryBuffer()
@@ -309,6 +345,10 @@ def appendToBuffer(Buffer,Data,ColoredData):
 def clearBuffer(Buffer):
     SpectralRadar.clearBuffer.argtypes = [BufferHandle]
     return SpectralRadar.clearBuffer(Buffer)
+
+def exportComplexData(ComplexData,Format,Path):
+    SpectralRadar.exportComplexData.argtypes = [ComplexDataHandle,ComplexDataExportFormat,C.POINTER(C.c_char)]
+    return SpectralRadar.exportComplexData(ComplexData,Format,Path)
 
 def exportData1D(Data,Format,Path):
     SpectralRadar.exportData1D.argtypes = [DataHandle,Data1DExportFormat,C.POINTER(C.c_char)]
@@ -340,30 +380,3 @@ def DataToNumpyArray(Data):
         return np.ctypeslib.as_array(arrC)
 
 #RawData version undefined
-
-# Testing ----------------------------------------------------------------------
-
-probeName = 'ProbeLKM10'
-
-from time import sleep
-waitTime = 0.2
-
-print('Attempting to initialize device...')
-device = initDevice() #Will crash kernel if not connected to DAQ
-sleep(waitTime)
-
-print('Attempting to create processing routine for device...')
-proc = createProcessingForDevice(device)
-sleep(waitTime)
-
-print('Attempting to create probe for device...')
-probe = initProbe(device,probeName)
-sleep(waitTime)
-
-print('Attempting to create data instance...')
-data = createData()
-sleep(waitTime)
-
-print('Attempting to assign acquisition type...')
-#acquisitionType = AcquisitionType()
-sleep(waitTime)
