@@ -250,6 +250,11 @@ def createBScanPattern(Probe,Range,AScans,apodization):
     SpectralRadar.createBScanPattern.restype = ScanPatternHandle
     return SpectralRadar.createBScanPattern(Probe,Range,AScans,apodization)
 
+def createFreeformScanPattern(Probe,positions,size_x,size_y,apodization):
+    SpectralRadar.createFreeformScanPattern.argtypes = [ProbeHandle,C.POINTER(C.c_float),C.c_int,C.c_int,BOOL]
+    SpectralRadar.restype = ScanPatternHandle
+    return SpectralRadar.createFreeformScanPattern(Probe,positions,size_x,size_y,apodization)
+
 def createData():
     SpectralRadar.createData.restype = DataHandle
     return SpectralRadar.createData()
@@ -346,6 +351,10 @@ def clearBuffer(Buffer):
     SpectralRadar.clearBuffer.argtypes = [BufferHandle]
     return SpectralRadar.clearBuffer(Buffer)
 
+def exportRawData(Raw,Format,Path):
+    SpectralRadar.exportRawData.argtypes = [RawDataHandle,RawDataExportFormat,C.POINTER(C.c_char)]
+    return SpectralRadar.exportRawData(Raw,Format,Path)
+
 def exportComplexData(ComplexData,Format,Path):
     SpectralRadar.exportComplexData.argtypes = [ComplexDataHandle,ComplexDataExportFormat,C.POINTER(C.c_char)]
     return SpectralRadar.exportComplexData(ComplexData,Format,Path)
@@ -361,6 +370,22 @@ def exportData2D(Data,Format,Path):
 def exportData3D(Data,Format,Path):
     SpectralRadar.exportData3D.argtypes = [DataHandle,Data3DExportFormat,C.POINTER(C.c_char)]
     return SpectralRadar.exportData3D(Data,Format,Path)
+
+def clearScanPattern(Pattern):
+    SpectralRadar.clearScanPattern.argtypes = [ScanPatternHandle]
+    return SpectralRadar.clearScanPattern(Pattern)
+
+def closeProcessing(Proc):
+    SpectralRadar.closeProcessing.argtypes = [ProcessingHandle]
+    return SpectralRadar.closeProcessing(Proc)
+
+def closeDevice(Dev):
+    SpectralRadar.closeDevice.argtypes = [DeviceHandle]
+    return SpectralRadar.closeDevice(Dev)
+
+def closeProbe(Probe):
+    SpectralRadar.closeProbe.argtypes = [ProbeHandle]
+    return SpectralRadar.closeProbe(Probe)
 
 # Bridge code ------------------------------------------------------------------
 
