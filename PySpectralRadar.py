@@ -207,7 +207,7 @@ These are of the following format:
 
     def sameFunctionNameAsInAPI(~Same argument names as API~):
         SpectralRadar.sameFunctionNameAsInAPI.argtypes = [~argument type(s) if applicable~]
-        SpectralRadar.sameFunctionNameAsInAPI.restypes = [~return type if applicable~]
+        SpectralRadar.sameFunctionNameAsInAPI.restype = [~return type if applicable~]
         return SpectralRadar.sameFunctionNameAsInAPI(~Same argument names as API~)
 
 '''
@@ -255,21 +255,25 @@ def createFreeformScanPattern(Probe,positions,size_x,size_y,apodization):
     SpectralRadar.restype = ScanPatternHandle
     return SpectralRadar.createFreeformScanPattern(Probe,positions,size_x,size_y,apodization)
 
+def createVolumePattern(Probe,RangeX,SizeX,RangeY,SizeY):
+    SpectralRadar.createVolumePattern.argtypes = [ProbeHandle,C.c_double,C.c_int,C.c_double,C.c_int]
+    SpectralRadar.createVolumePattern.restype = ScanPatternHandle
+    return SpectralRadar.createVolumePattern(Probe,RangeX,SizeX,RangeY,SizeY)
+
 def createData():
     SpectralRadar.createData.restype = DataHandle
     return SpectralRadar.createData()
 
 def createRawData():
-    SpectralRadar.createRawData.restypes = RawDataHandle
+    SpectralRadar.createRawData.restype = RawDataHandle
     return SpectralRadar.createRawData()
 
 def createComplexData():
-    SpectralRadar.restypes = ComplexDataHandle
+    SpectralRadar.createComplexData.restype = ComplexDataHandle
     return SpectralRadar.createComplexData()
 
 def getRawData(Dev,RawData):
     SpectralRadar.getRawData.argtypes = [DeviceHandle,RawDataHandle]
-    SpectralRadar.getRawData.restype = RawDataHandle
     return SpectralRadar.getRawData(Dev,RawData)
 
 def appendRawData(Data,DataToAppend,Direction):
@@ -352,23 +356,23 @@ def clearBuffer(Buffer):
     return SpectralRadar.clearBuffer(Buffer)
 
 def exportRawData(Raw,Format,Path):
-    SpectralRadar.exportRawData.argtypes = [RawDataHandle,RawDataExportFormat,C.POINTER(C.c_char)]
+    SpectralRadar.exportRawData.argtypes = [RawDataHandle,RawDataExportFormat,C.c_wchar_p]
     return SpectralRadar.exportRawData(Raw,Format,Path)
 
 def exportComplexData(ComplexData,Format,Path):
-    SpectralRadar.exportComplexData.argtypes = [ComplexDataHandle,ComplexDataExportFormat,C.POINTER(C.c_char)]
+    SpectralRadar.exportComplexData.argtypes = [ComplexDataHandle,ComplexDataExportFormat,C.c_wchar_p]
     return SpectralRadar.exportComplexData(ComplexData,Format,Path)
 
 def exportData1D(Data,Format,Path):
-    SpectralRadar.exportData1D.argtypes = [DataHandle,Data1DExportFormat,C.POINTER(C.c_char)]
+    SpectralRadar.exportData1D.argtypes = [DataHandle,Data1DExportFormat,C.c_wchar_p]
     return SpectralRadar.exportData1D(Data,Format,Path)
 
 def exportData2D(Data,Format,Path):
-    SpectralRadar.exportData2D.argtypes = [DataHandle,Data2DExportFormat,C.POINTER(C.c_char)]
+    SpectralRadar.exportData2D.argtypes = [DataHandle,Data2DExportFormat,C.c_wchar_p]
     return SpectralRadar.exportData2D(Data,Format,Path)
 
 def exportData3D(Data,Format,Path):
-    SpectralRadar.exportData3D.argtypes = [DataHandle,Data3DExportFormat,C.POINTER(C.c_char)]
+    SpectralRadar.exportData3D.argtypes = [DataHandle,Data3DExportFormat,C.c_wchar_p]
     return SpectralRadar.exportData3D(Data,Format,Path)
 
 def clearScanPattern(Pattern):
