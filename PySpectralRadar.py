@@ -7,10 +7,10 @@ Python wrapper for Thorlabs SpectralRadar SDK
 @author: sstucker
 
 """
-
 import ctypes as C
 from enum import IntEnum
 import numpy as np
+from numpy.ctypeslib import ndpointer
 
 #Imports SpectralRadar libraries. Thorlabs software must be installed on machine
 SpectralRadar = C.CDLL('SpectralRadar')
@@ -291,9 +291,9 @@ def getDataPropertyInt(Data,Selection):
     return SpectralRadar.getDataPropertyInt(Data,Selection)
 
 def getRawDataPropertyInt(RawData,Selection):
-    SpectralRadar.getDataPropertyInt.argtypes = [RawDataHandle,RawDataPropertyInt]
-    SpectralRadar.getDataPropertyInt.restype = C.c_int
-    return SpectralRadar.getDataPropertyInt(RawData,Selection)
+    SpectralRadar.getRawDataPropertyInt.argtypes = [RawDataHandle,RawDataPropertyInt]
+    SpectralRadar.getRawDataPropertyInt.restype = C.c_int
+    return SpectralRadar.getRawDataPropertyInt(RawData,Selection)
 
 def startMeasurement(Dev,Pattern,Type): #Note: named lowercase 'type' in C, which is reserved in Python
     SpectralRadar.startMeasurement.argtypes = [DeviceHandle,ScanPatternHandle,AcquisitionType]
@@ -391,21 +391,28 @@ def closeProbe(Probe):
     SpectralRadar.closeProbe.argtypes = [ProbeHandle]
     return SpectralRadar.closeProbe(Probe)
 
+def copyRawDataContent(RawDataSource,DataContent):
+    '''
+    This function copies raw data out of the RawDataSource and into the numpy
+    object DataContent. DataContent MUST match the dimensions of the
+    RawDataSource and be of type numpy.uint16. Use bridge function
+    rawDataToNumpy defined below to return the array directly.
+
+    Note: this usurps the copyRawDataContent function in the wrapper
+    namespace. Take care to call the original function from the C library
+    if you want that functionality.
+    '''
+    SpectralRadar.copyRawDataContent.argtypes = [RawDataHandle,ndpointer(dtype=np.uint16,ndim=3,flags='C_CONTIGUOUS')]
+    SpectralRadar.copyRawDataContent(RawDataSource,DataContent)
+
 # Bridge code ------------------------------------------------------------------
 
-def DataToNumpyArray(Data):
+def rawDataToNumpy(RawDataSource):
     '''
-    Returns numpy array from DataHandle object. Might work once the array has
-    actual dimensions, definitely doesn't when array has size 0.
+    Returns numpy array extracted from RawDataHandle object.
     '''
-    data = createData()
-    size0 = getDataPropertyInt(Data,0)
-    size1 = getDataPropertyInt(Data,1)
-    npArr = np.zeros((size0,size1),dtype='float32')
-    arrC = np.ctypeslib.as_ctypes(npArr)
-    SpectralRadar.copyDataContent.argtypes = [DataHandle,C.POINTER(C.c_float*size0*size1)]
-    SpectralRadar.copyDataContent(Data,arrC)
-    if size0 > 0:
-        return np.ctypeslib.as_array(arrC)
-
-#RawData version undefined
+    property = RawDataPropertyInt
+    rawDim = [property.RawData_Size1,property.RawData_Size2,property.RawData_Size3]
+    npRawData = np.empty(rawDim,dtype=np.uint16)
+    copyRawDataContent(RawDataSource,npRawData)
+    return npRawData
