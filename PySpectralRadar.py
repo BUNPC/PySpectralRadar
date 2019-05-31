@@ -251,9 +251,17 @@ def createBScanPattern(Probe,Range,AScans,apodization):
     return SpectralRadar.createBScanPattern(Probe,Range,AScans,apodization)
 
 def createFreeformScanPattern(Probe,positions,size_x,size_y,apodization):
-    SpectralRadar.createFreeformScanPattern.argtypes = [ProbeHandle,C.POINTER(C.c_float),C.c_int,C.c_int,BOOL]
-    SpectralRadar.restype = ScanPatternHandle
-    return SpectralRadar.createFreeformScanPattern(Probe,positions,size_x,size_y,apodization)
+    '''
+    Positions must be a numpy.float32 array of dimension 1, and must have
+    length equal to 2 * size_x * size_y. Size_x is the number of points in the
+    pattern repeated size_y times, but the positions array is taken as is.
+    '''
+    if positions.size == 2*size_x*size_y:
+        SpectralRadar.createFreeformScanPattern.argtypes = [ProbeHandle,ndpointer(dtype=np.float32,ndim=1,flags='C_CONTIGUOUS'),C.c_int,C.c_int,BOOL]
+        SpectralRadar.createFreeformScanPattern.restype = ScanPatternHandle
+        return SpectralRadar.createFreeformScanPattern(Probe,positions,size_x,size_y,apodization)
+    else:
+        print('PySpectralRadar: WARNING! Scan pattern not created!')
 
 def createVolumePattern(Probe,RangeX,SizeX,RangeY,SizeY):
     SpectralRadar.createVolumePattern.argtypes = [ProbeHandle,C.c_double,C.c_int,C.c_double,C.c_int]
@@ -395,8 +403,7 @@ def copyRawDataContent(RawDataSource,DataContent):
     '''
     This function copies raw data out of the RawDataSource and into the numpy
     object DataContent. DataContent MUST match the dimensions of the
-    RawDataSource and be of type numpy.uint16. Use bridge function
-    rawDataToNumpy defined below to return the array directly.
+    RawDataSource (use getRawDataPropertyInt and be of type numpy.uint16.
 
     Note: this usurps the copyRawDataContent function in the wrapper
     namespace. Take care to call the original function from the C library
@@ -404,15 +411,3 @@ def copyRawDataContent(RawDataSource,DataContent):
     '''
     SpectralRadar.copyRawDataContent.argtypes = [RawDataHandle,ndpointer(dtype=np.uint16,ndim=3,flags='C_CONTIGUOUS')]
     SpectralRadar.copyRawDataContent(RawDataSource,DataContent)
-
-# Bridge code ------------------------------------------------------------------
-
-def rawDataToNumpy(RawDataSource):
-    '''
-    Returns numpy array extracted from RawDataHandle object.
-    '''
-    property = RawDataPropertyInt
-    rawDim = [property.RawData_Size1,property.RawData_Size2,property.RawData_Size3]
-    npRawData = np.empty(rawDim,dtype=np.uint16)
-    copyRawDataContent(RawDataSource,npRawData)
-    return npRawData
