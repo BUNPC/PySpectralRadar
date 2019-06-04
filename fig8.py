@@ -2,12 +2,13 @@
 
 import sys
 import numpy as np
+import matplotlib.pyplot as plt
 
 from PySpectralRadar import *
 
 #-------------------------------------------------------------------------------
 
-def generateFigureEightPositions(size,alinesPer8,rpt=1):
+def generateFigureEightPositions(size,alinesPer8,rpt=1,outputText=False):
     '''
     Generates 1D list of positon pairs for use with SpectralRadar 3.X
     createFreeformScanPattern, which takes units of mm, therefore size argument
@@ -15,12 +16,15 @@ def generateFigureEightPositions(size,alinesPer8,rpt=1):
     '''
     if rpt > 0:
         t = np.linspace(0,2*np.pi,alinesPer8,dtype=np.float32)
-        x = np.cos(t)
-        y = np.sin(2*t)
+        x = size*np.cos(t)
+        y = (size/2)*np.sin(2*t)
         pos = np.empty(int(2*alinesPer8), dtype=np.float32)
+        plt.show()
         pos[0::2] = x
         pos[1::2] = y
-        posRepeated = np.repeat(pos,rpt)
+        posRepeated = np.tile(pos,rpt)
+        if outputText:
+            np.savetxt('scanPatternPos.txt',posRepeated)
         return posRepeated.astype(np.float32)
 
 #-------------------------------------------------------------------------------
@@ -45,7 +49,7 @@ print('----------------------------------\n')
 
 ###input('\nPress ENTER to initiate probe handle...')
 
-probe = initProbe(dev,'ProbeFigureEight')
+probe = initProbe(dev,'ProbeLKM10-LV')
 
 ###input('\nPress ENTER to initiate processing handle...')
 
@@ -61,10 +65,11 @@ print('----------------------------------\n')
 FALSE = BOOL(0)
 TRUE = BOOL(1)
 
+size = 0.1
 ascans = 200
-repeats = 400
+repeats = 2048
 
-fig8pos = generateFigureEightPositions(0.3,ascans,rpt=repeats)
+fig8pos = generateFigureEightPositions(size,ascans,rpt=repeats,outputText=True)
 print('\n----------------------------------')
 print('Figure-8 Positions array:')
 print(fig8pos)
@@ -73,6 +78,7 @@ print(fig8pos.size)
 print('----------------------------------\n')
 
 scanPattern = createFreeformScanPattern(probe,fig8pos,ascans*repeats,1,FALSE)
+rotateScanPattern(scanPattern,45.0)
 
 print('\n----------------------------------')
 print('Created scan pattern: 10X figure-8.')
@@ -117,7 +123,9 @@ print('Raw data:')
 print(holder)
 print('----------------------------------\n')
 
-np.save('figure8Demo',holder)
+filename = 'fig8_1_p1z'
+
+np.save(filename,holder)
 print('\n----------------------------------')
 print('Saved raw data array as .npy')
 print('----------------------------------\n')
