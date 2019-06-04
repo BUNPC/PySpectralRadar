@@ -263,10 +263,23 @@ def createFreeformScanPattern(Probe,positions,size_x,size_y,apodization):
     else:
         print('PySpectralRadar: WARNING! Scan pattern not created!')
 
+def rotateScanPattern(Pattern,Angle):
+    SpectralRadar.rotateScanPattern.argtypes = [ScanPatternHandle,C.c_double]
+    return SpectralRadar.rotateScanPattern(Pattern,Angle)
+
+
 def createVolumePattern(Probe,RangeX,SizeX,RangeY,SizeY):
     SpectralRadar.createVolumePattern.argtypes = [ProbeHandle,C.c_double,C.c_int,C.c_double,C.c_int]
     SpectralRadar.createVolumePattern.restype = ScanPatternHandle
     return SpectralRadar.createVolumePattern(Probe,RangeX,SizeX,RangeY,SizeY)
+
+def getScanPatternLUT(Pattern,PosX,PosY):
+    '''
+    Replaces PosX and PosY arrays with X and Y coordinates of scan pattern from
+    scanner LUT.
+    '''
+    SpectralRadar.getScanPatternLUT.argtypes = [ScanPatternHandle,ndpointer(dtype=np.float64,ndim=1,flags='C_CONTIGUOUS'),ndpointer(dtype=np.float64,ndim=1,flags='C_CONTIGUOUS')]
+    SpectralRadar.getScanPatternLUT(Pattern,PosX,PosY)
 
 def createData():
     SpectralRadar.createData.restype = DataHandle
