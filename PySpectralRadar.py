@@ -306,6 +306,10 @@ def getRawDataEx(Dev,RawData,CameraIdx):
     SpectralRadar.getRawData.restype = RawDataHandle
     return SpectralRadar.getRawDataEx(Dev,RawData,CameraIdx)
 
+def getComplexDataPropertyInt(Data,Selection):
+    SpectralRadar.getComplexDataPropertyInt.argtypes = [ComplexDataHandle,DataPropertyInt]
+    return SpectralRadar.getComplexDataPropertyInt(Data,Selection)
+
 def getDataPropertyInt(Data,Selection):
     SpectralRadar.getDataPropertyInt.argtypes = [DataHandle,DataPropertyInt]
     SpectralRadar.getDataPropertyInt.restype = C.c_int
@@ -411,6 +415,13 @@ def closeDevice(Dev):
 def closeProbe(Probe):
     SpectralRadar.closeProbe.argtypes = [ProbeHandle]
     return SpectralRadar.closeProbe(Probe)
+
+def copyComplexDataContent(ComplexDataSource,DataContent):
+    '''
+    See below.
+    '''
+    SpectralRadar.copyComplexDataContent.argtypes = [ComplexDataHandle,ndpointer(dtype=np.uint16,ndim=3,flags='C_CONTIGUOUS')]
+    return SpectralRadar.copyComplexDataContent(ComplexDataSource,DataContent)
 
 def copyRawDataContent(RawDataSource,DataContent):
     '''
