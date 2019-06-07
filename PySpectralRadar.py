@@ -21,7 +21,7 @@ class BOOL(C.c_int):
     pass
 
 class ComplexFloat(C.Structure):
-    _fields_=[("data",C.c_float*2)]
+    _fields_=[("real",C.c_float),("imag",C.c_float)]
 
 # Pointer typedefs ------------------------------------------------------------
 
@@ -58,7 +58,7 @@ ImageFieldHandle = C.POINTER(ImageFieldStruct)
 class DeviceStruct(C.Structure):
     pass
 
-DeviceHandle = C.POINTER(DeviceStruct)
+OCTDeviceHandle = C.POINTER(DeviceStruct)
 
 class ScanPatternStruct(C.Structure):
     pass
@@ -213,17 +213,17 @@ These are of the following format:
 '''
 
 def initDevice():
-    SpectralRadar.initDevice.restype = DeviceHandle
+    SpectralRadar.initDevice.restype = OCTDeviceHandle
     return SpectralRadar.initDevice()
 
 def initProbe(Dev,ProbeFile):
     ProbeFile = C.c_char_p(ProbeFile.encode('utf-8'))
-    SpectralRadar.initProbe.argtypes = [DeviceHandle, C.c_char_p]
+    SpectralRadar.initProbe.argtypes = [OCTDeviceHandle, C.c_char_p]
     SpectralRadar.initProbe.restype = ProbeHandle
     return SpectralRadar.initProbe(Dev,ProbeFile)
 
 def createProcessingForDevice(Dev):
-    SpectralRadar.createProcessingForDevice.argtypes = [DeviceHandle]
+    SpectralRadar.createProcessingForDevice.argtypes = [OCTDeviceHandle]
     SpectralRadar.createProcessingForDevice.restype = ProcessingHandle
     return SpectralRadar.createProcessingForDevice(Dev)
 
@@ -254,7 +254,7 @@ def createFreeformScanPattern(Probe,positions,size_x,size_y,apodization):
     '''
     Positions must be a numpy.float32 array of dimension 1, and must have
     length equal to 2 * size_x * size_y. Size_x is the number of points in the
-    pattern repeated size_y times, but the positions array is taken as is.
+    pattern repeated size_y times, but the positions array is taken as-is.
     '''
     if positions.size == 2*size_x*size_y:
         SpectralRadar.createFreeformScanPattern.argtypes = [ProbeHandle,ndpointer(dtype=np.float32,ndim=1,flags='C_CONTIGUOUS'),C.c_int,C.c_int,BOOL]
@@ -267,11 +267,15 @@ def rotateScanPattern(Pattern,Angle):
     SpectralRadar.rotateScanPattern.argtypes = [ScanPatternHandle,C.c_double]
     return SpectralRadar.rotateScanPattern(Pattern,Angle)
 
-
 def createVolumePattern(Probe,RangeX,SizeX,RangeY,SizeY):
     SpectralRadar.createVolumePattern.argtypes = [ProbeHandle,C.c_double,C.c_int,C.c_double,C.c_int]
     SpectralRadar.createVolumePattern.restype = ScanPatternHandle
     return SpectralRadar.createVolumePattern(Probe,RangeX,SizeX,RangeY,SizeY)
+
+def getWavelengthAtPixel(Dev,Pixel):
+    SpectralRadar.getWavelengthAtPixel.argtypes = [OCTDeviceHandle,C.c_int]
+    SpectralRadar.getWavelengthAtPixel.restype = C.c_double
+    return SpectralRadar.getWavelengthAtPixel(Dev,Pixel)
 
 def getScanPatternLUT(Pattern,PosX,PosY):
     '''
@@ -294,7 +298,7 @@ def createComplexData():
     return SpectralRadar.createComplexData()
 
 def getRawData(Dev,RawData):
-    SpectralRadar.getRawData.argtypes = [DeviceHandle,RawDataHandle]
+    SpectralRadar.getRawData.argtypes = [OCTDeviceHandle,RawDataHandle]
     return SpectralRadar.getRawData(Dev,RawData)
 
 def appendRawData(Data,DataToAppend,Direction):
@@ -302,7 +306,7 @@ def appendRawData(Data,DataToAppend,Direction):
     return SpectralRadar.appendRawData(Data,DataToAppend,Direction)
 
 def getRawDataEx(Dev,RawData,CameraIdx):
-    SpectralRadar.getRawDataEx.argtypes = [DeviceHandle,RawDataHandle,C.c_int]
+    SpectralRadar.getRawDataEx.argtypes = [OCTDeviceHandle,RawDataHandle,C.c_int]
     SpectralRadar.getRawData.restype = RawDataHandle
     return SpectralRadar.getRawDataEx(Dev,RawData,CameraIdx)
 
@@ -321,15 +325,15 @@ def getRawDataPropertyInt(RawData,Selection):
     return SpectralRadar.getRawDataPropertyInt(RawData,Selection)
 
 def startMeasurement(Dev,Pattern,Type): #Note: named lowercase 'type' in C, which is reserved in Python
-    SpectralRadar.startMeasurement.argtypes = [DeviceHandle,ScanPatternHandle,AcquisitionType]
+    SpectralRadar.startMeasurement.argtypes = [OCTDeviceHandle,ScanPatternHandle,AcquisitionType]
     return SpectralRadar.startMeasurement(Dev,Pattern,Type)
 
 def stopMeasurement(Dev):
-    SpectralRadar.stopMeasurement.argtypes = [DeviceHandle]
+    SpectralRadar.stopMeasurement.argtypes = [OCTDeviceHandle]
     return SpectralRadar.stopMeasurement(Dev)
 
 def closeDevice(Dev):
-    SpectralRadar.closeDevice.argtypes = [DeviceHandle]
+    SpectralRadar.closeDevice.argtypes = [OCTDeviceHandle]
     return SpectralRadar.closeDevice(Dev)
 
 def closeProcessing(Proc):
@@ -357,15 +361,15 @@ def setProbeParameterInt(Probe,Selection,Value):
     return SpectralRadar.setProbeParameterInt(Probe,Selection,Value)
 
 def setCameraPreset(Dev,Probe,Proc,Preset):
-    SpectralRadar.setCameraPreset.argtypes = [DeviceHandle,ProbeHandle,ProcessingHandle,C.c_int]
+    SpectralRadar.setCameraPreset.argtypes = [OCTDeviceHandle,ProbeHandle,ProcessingHandle,C.c_int]
     return SpectralRadar.setCameraPreset(Dev,Probe,Proc,Preset)
 
 def setTriggerMode(Dev,TriggerMode):
-    SpectralRadar.setTriggerMode.argtypes = [DeviceHandle,Device_TriggerType]
+    SpectralRadar.setTriggerMode.argtypes = [OCTDeviceHandle,Device_TriggerType]
     return SpectralRadar.setTriggerMode(Dev,TriggerMode)
 
 def setTriggerTimeoutSec(Dev,Timeout):
-    SpectralRadar.setTriggerTimeoutSec.argtypes = [DeviceHandle,C.c_int]
+    SpectralRadar.setTriggerTimeoutSec.argtypes = [OCTDeviceHandle,C.c_int]
     return SpectralRadar.setTriggerTimeoutSec(Dev,Timeout)
 
 def createMemoryBuffer():
@@ -409,7 +413,7 @@ def closeProcessing(Proc):
     return SpectralRadar.closeProcessing(Proc)
 
 def closeDevice(Dev):
-    SpectralRadar.closeDevice.argtypes = [DeviceHandle]
+    SpectralRadar.closeDevice.argtypes = [OCTDeviceHandle]
     return SpectralRadar.closeDevice(Dev)
 
 def closeProbe(Probe):
@@ -427,9 +431,9 @@ def copyRawDataContent(RawDataSource,DataContent):
     '''
     This function copies raw data out of the RawDataSource and into the numpy
     object DataContent. DataContent MUST match the dimensions of the
-    RawDataSource (use getRawDataPropertyInt and be of type numpy.uint16.
+    RawDataSource (use getRawDataPropertyInt and be of type numpy.uint16)
 
-    Note: this usurps the copyRawDataContent function in the wrapper
+    Note: this numpy bridge usurps the copyRawDataContent function in the wrapper
     namespace. Take care to call the original function from the C library
     if you want that functionality.
     '''
