@@ -96,6 +96,21 @@ class CEnum(IntEnum):
     def from_param(cls, obj):
         return int(obj)
 
+class DevicePropertyFloat(CEnum):
+
+    Device_FullWellCapacity = 0
+    Device_zSpacing = 1
+    Device_zRange = 2
+    Device_SignalAmplitudeMin_dB = 3
+    Device_SignalAmplitudeLow_dB = 4
+    Device_SignalAmplitudeHigh_dB = 5
+    Device_SignalAmplitudeMax_dB = 6
+    Device_BinToElectronScaling = 7
+    Device_Temperature Internal = 8
+    Device_SLD_OnTime_sec = 9
+    Device_CenterWavelength_nm = 10
+    Device_SpectralWidth_nm = 11
+    Device_MaxTriggerFrequency_Hz = 12
 
 class AcquisitionType(CEnum):
 
@@ -276,6 +291,11 @@ def getWavelengthAtPixel(Dev,Pixel):
     SpectralRadar.getWavelengthAtPixel.argtypes = [OCTDeviceHandle,C.c_int]
     SpectralRadar.getWavelengthAtPixel.restype = C.c_double
     return SpectralRadar.getWavelengthAtPixel(Dev,Pixel)
+
+def getDevicePropertyFloat(Dev,Selection):
+    SpectralRadar.getDevicePropertyFloat.argtypes = [OCTDeviceHandle,DevicePropertyFloat]
+    SpectralRadar.getDevicePropertyFloat.restype = C.c_float
+    return SpectralRadar.getDevicePropertyFloat(Dev,Selection)
 
 def getScanPatternLUT(Pattern,PosX,PosY):
     '''
