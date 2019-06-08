@@ -7,7 +7,7 @@ version 4.4.7.0.
 It should work with most other 4.X versions with little
 to no modification.
 
-Other dependencies: numpy, ctypes, matplotlib for the demos
+Other dependencies: numpy, ctypes
 
 NOT ALL FUNCTIONS FROM THE SPECTRALRADAR API ARE INCLUDED. Functions are
 added as they become useful to the project this is being developed for.
