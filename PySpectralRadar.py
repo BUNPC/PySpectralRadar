@@ -20,6 +20,9 @@ SpectralRadar = C.CDLL('SpectralRadar')
 class BOOL(C.c_int):
     pass
 
+FALSE = BOOL(0)
+TRUE = BOOL(1)
+
 class ComplexFloat(C.Structure):
     _fields_=[("real",C.c_float),("imag",C.c_float)]
 
@@ -106,7 +109,7 @@ class DevicePropertyFloat(CEnum):
     Device_SignalAmplitudeHigh_dB = 5
     Device_SignalAmplitudeMax_dB = 6
     Device_BinToElectronScaling = 7
-    Device_Temperature Internal = 8
+    Device_Temperature = 8
     Device_SLD_OnTime_sec = 9
     Device_CenterWavelength_nm = 10
     Device_SpectralWidth_nm = 11
@@ -442,20 +445,26 @@ def closeProbe(Probe):
 
 def copyComplexDataContent(ComplexDataSource,DataContent):
     '''
-    See below.
+    Copies complex processed data out of the ComplexDataSource and into the
+    numpy object DataContent, which uses PySpectralRadar ctypes structure
+    ComplexFloat to hold two 16 bit floats in fields 'real' and 'imag'
+
+    Note: usurps copyComplexDataContent in the wrapper namespace. If you would
+    like to move the data to a raw pointer rather than a numpy array, take care
+    to call the original function.
     '''
-    SpectralRadar.copyComplexDataContent.argtypes = [ComplexDataHandle,ndpointer(dtype=np.uint16,ndim=3,flags='C_CONTIGUOUS')]
+    SpectralRadar.copyComplexDataContent.argtypes = [ComplexDataHandle,ndpointer(dtype=ComplexFloat,ndim=3,flags='C_CONTIGUOUS')]
     return SpectralRadar.copyComplexDataContent(ComplexDataSource,DataContent)
 
 def copyRawDataContent(RawDataSource,DataContent):
     '''
-    This function copies raw data out of the RawDataSource and into the numpy
+    Copies raw data out of the RawDataSource and into the numpy
     object DataContent. DataContent MUST match the dimensions of the
     RawDataSource (use getRawDataPropertyInt and be of type numpy.uint16)
 
-    Note: this numpy bridge usurps the copyRawDataContent function in the wrapper
-    namespace. Take care to call the original function from the C library
-    if you want that functionality.
+    Note: usurps copyRawDataContent in the wrapper namespace. If you would
+    like to move the data to a raw pointer rather than a numpy array, take care
+    to call the original function.
     '''
     SpectralRadar.copyRawDataContent.argtypes = [RawDataHandle,ndpointer(dtype=np.uint16,ndim=3,flags='C_CONTIGUOUS')]
     SpectralRadar.copyRawDataContent(RawDataSource,DataContent)
