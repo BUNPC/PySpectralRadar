@@ -24,7 +24,7 @@ FALSE = BOOL(0)
 TRUE = BOOL(1)
 
 class ComplexFloat(C.Structure):
-    _fields_=[("real",C.c_float),("imag",C.c_float)]
+    _fields_=(("real",C.c_float),("imag",C.c_float))
 
 # Pointer typedefs ------------------------------------------------------------
 
@@ -453,7 +453,7 @@ def copyComplexDataContent(ComplexDataSource,DataContent):
     like to move the data to a raw pointer rather than a numpy array, take care
     to call the original function.
     '''
-    SpectralRadar.copyComplexDataContent.argtypes = [ComplexDataHandle,ndpointer(dtype=ComplexFloat,ndim=3,flags='C_CONTIGUOUS')]
+    SpectralRadar.copyComplexDataContent.argtypes = [ComplexDataHandle,ndpointer(dtype=np.complex64,ndim=3,flags='C_CONTIGUOUS')]
     return SpectralRadar.copyComplexDataContent(ComplexDataSource,DataContent)
 
 def copyRawDataContent(RawDataSource,DataContent):
