@@ -127,7 +127,7 @@ print('----------------------------------\n')
 holder = np.empty(rawDim,dtype=np.uint16)
 copyRawDataContent(rawDataHandle,holder)
 
-cholder = np.empty(complexDim,dtype=ComplexFloat)
+cholder = np.empty(complexDim,dtype=np.complex64)
 copyComplexDataContent(complexDataHandle,cholder)
 
 print('\n----------------------------------')
