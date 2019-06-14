@@ -8,6 +8,35 @@ from PySpectralRadar import *
 
 #-------------------------------------------------------------------------------
 
+def generateIdealFigureEightPositions(xsize,alinesPerX,rpt=1):
+    
+    if rpt > 0:
+        
+        t = np.linspace(0,2*np.pi,100,dtype=np.float32)
+        cross = np.linspace(-xsize,xsize,alinesPerX)
+        cross1 = np.array([cross[::-1],cross[::-1]])
+        cross2 = np.array([cross,-cross])
+        x = 2*xsize*np.cos(t)
+        y = ((2*xsize)/1.7)*np.sin(2*t)
+        x1 = x[x>xsize+0.001*xsize]
+        x2 = x[x<-xsize-0.001*xsize]
+        y1 = y[x>xsize+0.001*xsize]
+        y2 = y[x<-xsize-0.001*xsize]
+                
+        X = np.concatenate([x1[0:16],cross1[0],x2,cross2[0],x1[17::]])
+        Y = np.concatenate([y1[0:16],cross1[1],y2,cross2[1],y1[17::]])
+            
+        pos = np.empty(int(2*len(X)), dtype=np.float32)
+        pos[0::2] = X
+        pos[1::2] = Y
+        posRepeated = np.tile(pos,rpt)
+        
+        print('Figure-8 scan pattern generated...')
+        print(str(len(cross1[0]))+' points in each orthogonal cross...')
+        print(str(len(X))+' total points.')
+        
+        return posRepeated, X, Y
+
 def generateFigureEightPositions(size,alinesPer8,rpt=1,outputText=False):
     '''
     Generates 1D list of positon pairs for use with SpectralRadar 3.X
