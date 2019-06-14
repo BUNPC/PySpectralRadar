@@ -7,10 +7,12 @@ version 4.4.7.0.
 It should work with most other 4.X versions with little
 to no modification.
 
-Other dependencies: numpy, ctypes
+Dependencies: numpy, ctypes
 
 NOT ALL FUNCTIONS FROM THE SPECTRALRADAR API ARE INCLUDED. Functions are
 added as they become useful to the project this is being developed for.
+Structs, functions, and enums can be easily added as Python classes or functions
+following the format of those already implemented.
 
 Where possible, wrapper objects and arguments share the name of the
 prototype they wrap, as declared in the .h or found in the ThorLabs docs.
