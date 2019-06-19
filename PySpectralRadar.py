@@ -6,6 +6,8 @@ Python wrapper for Thorlabs SpectralRadar SDK
 
 @author: sstucker
 
+Version 0.0.1
+
 """
 import ctypes as C
 from enum import IntEnum
