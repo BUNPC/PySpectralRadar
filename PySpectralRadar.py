@@ -6,7 +6,7 @@ Python wrapper for Thorlabs SpectralRadar SDK
 
 @author: sstucker
 
-Version 0.0.1
+Version 0.0.2
 
 """
 import ctypes as C
@@ -218,6 +218,14 @@ class Device_TriggerType(CEnum):
     Trigger_FreeRunning = 0
     Trigger_TrigBoard_ExternalStart = 1
     Trigger_External_AScan = 2
+
+class Device_CameraPreset(CEnum):
+
+    Device_CameraPreset_Default = 0
+    Device_CameraPreset_1 = 1
+    Device_CameraPreset_2 = 2
+    Device_CameraPreset_3 = 3
+    Device_CameraPreset_4 = 4
 
 #Wrapper functions ------------------------------------------------------------
 
