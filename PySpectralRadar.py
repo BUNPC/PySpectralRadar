@@ -6,7 +6,7 @@ Python wrapper for Thorlabs SpectralRadar SDK
 
 @author: sstucker
 
-Version 0.0.2
+Version 0.0.3
 
 """
 import ctypes as C
@@ -478,3 +478,15 @@ def copyRawDataContent(RawDataSource,DataContent):
     '''
     SpectralRadar.copyRawDataContent.argtypes = [RawDataHandle,ndpointer(dtype=np.uint16,ndim=3,flags='C_CONTIGUOUS')]
     SpectralRadar.copyRawDataContent(RawDataSource,DataContent)
+
+def getRawDataShape(rawDataHandle):
+    """
+    :param rawDataHandle: SpectralRadar raw data handle object
+    :return: 3D shape of raw data
+    """
+    prop = RawDataPropertyInt
+    rawSize1 = getRawDataPropertyInt(rawDataHandle,prop.RawData_Size1)
+    rawSize2 = getRawDataPropertyInt(rawDataHandle,prop.RawData_Size2)
+    rawSize3 = getRawDataPropertyInt(rawDataHandle,prop.RawData_Size3)
+
+    return np.array([rawSize1,rawSize2,rawSize3])
