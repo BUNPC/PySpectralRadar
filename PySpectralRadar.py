@@ -1,13 +1,9 @@
 # -*- coding: utf-8 -*-
 """
 Created on Tue May 21 14:18:32 2019
-
 Python wrapper for Thorlabs SpectralRadar SDK
-
 @author: sstucker
-
 Version 0.0.3
-
 """
 import ctypes as C
 from enum import IntEnum
@@ -229,16 +225,13 @@ class Device_CameraPreset(CEnum):
 
 #Wrapper functions ------------------------------------------------------------
 
-'''
-
+"""
 These are of the following format:
-
     def sameFunctionNameAsInAPI(~Same argument names as API~):
         SpectralRadar.sameFunctionNameAsInAPI.argtypes = [~argument type(s) if applicable~]
         SpectralRadar.sameFunctionNameAsInAPI.restype = [~return type if applicable~]
         return SpectralRadar.sameFunctionNameAsInAPI(~Same argument names as API~)
-
-'''
+"""
 
 def initDevice():
     SpectralRadar.initDevice.restype = OCTDeviceHandle
@@ -279,11 +272,11 @@ def createBScanPattern(Probe,Range,AScans,apodization):
     return SpectralRadar.createBScanPattern(Probe,Range,AScans,apodization)
 
 def createFreeformScanPattern(Probe,positions,size_x,size_y,apodization):
-    '''
+    """
     Positions must be a numpy.float32 array of dimension 1, and must have
     length equal to 2 * size_x * size_y. Size_x is the number of points in the
     pattern repeated size_y times, but the positions array is taken as-is.
-    '''
+    """
     if positions.size == 2*size_x*size_y:
         SpectralRadar.createFreeformScanPattern.argtypes = [ProbeHandle,ndpointer(dtype=np.float32,ndim=1,flags='C_CONTIGUOUS'),C.c_int,C.c_int,BOOL]
         SpectralRadar.createFreeformScanPattern.restype = ScanPatternHandle
@@ -292,6 +285,9 @@ def createFreeformScanPattern(Probe,positions,size_x,size_y,apodization):
         print('PySpectralRadar: WARNING! Scan pattern not created!')
 
 def rotateScanPattern(Pattern,Angle):
+    """
+    Changes coordinates of scanPatternHandle by angle in radians.
+    """
     SpectralRadar.rotateScanPattern.argtypes = [ScanPatternHandle,C.c_double]
     return SpectralRadar.rotateScanPattern(Pattern,Angle)
 
@@ -311,10 +307,10 @@ def getDevicePropertyFloat(Dev,Selection):
     return SpectralRadar.getDevicePropertyFloat(Dev,Selection)
 
 def getScanPatternLUT(Pattern,PosX,PosY):
-    '''
+    """
     Replaces PosX and PosY arrays with X and Y coordinates of scan pattern from
     scanner LUT.
-    '''
+    """
     SpectralRadar.getScanPatternLUT.argtypes = [ScanPatternHandle,ndpointer(dtype=np.float64,ndim=1,flags='C_CONTIGUOUS'),ndpointer(dtype=np.float64,ndim=1,flags='C_CONTIGUOUS')]
     SpectralRadar.getScanPatternLUT(Pattern,PosX,PosY)
 
@@ -454,28 +450,26 @@ def closeProbe(Probe):
     return SpectralRadar.closeProbe(Probe)
 
 def copyComplexDataContent(ComplexDataSource,DataContent):
-    '''
+    """
     Copies complex processed data out of the ComplexDataSource and into the
     numpy object DataContent, which uses PySpectralRadar ctypes structure
     ComplexFloat to hold two 16 bit floats in fields 'real' and 'imag'
-
     Note: usurps copyComplexDataContent in the wrapper namespace. If you would
     like to move the data to a raw pointer rather than a numpy array, take care
     to call the original function.
-    '''
+    """
     SpectralRadar.copyComplexDataContent.argtypes = [ComplexDataHandle,ndpointer(dtype=np.complex64,ndim=3,flags='C_CONTIGUOUS')]
     return SpectralRadar.copyComplexDataContent(ComplexDataSource,DataContent)
 
 def copyRawDataContent(RawDataSource,DataContent):
-    '''
+    """
     Copies raw data out of the RawDataSource and into the numpy
     object DataContent. DataContent MUST match the dimensions of the
     RawDataSource (use getRawDataPropertyInt and be of type numpy.uint16)
-
     Note: usurps copyRawDataContent in the wrapper namespace. If you would
     like to move the data to a raw pointer rather than a numpy array, take care
     to call the original function.
-    '''
+    """
     SpectralRadar.copyRawDataContent.argtypes = [RawDataHandle,ndpointer(dtype=np.uint16,ndim=3,flags='C_CONTIGUOUS')]
     SpectralRadar.copyRawDataContent(RawDataSource,DataContent)
 
