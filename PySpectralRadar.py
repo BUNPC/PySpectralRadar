@@ -3,7 +3,7 @@
 Created on Tue May 21 14:18:32 2019
 Python wrapper for Thorlabs SpectralRadar SDK
 @author: sstucker
-Version 0.0.3
+Version 0.1.0
 """
 import ctypes as C
 from enum import IntEnum
@@ -458,7 +458,7 @@ def copyComplexDataContent(ComplexDataSource,DataContent):
     like to move the data to a raw pointer rather than a numpy array, take care
     to call the original function.
     """
-    SpectralRadar.copyComplexDataContent.argtypes = [ComplexDataHandle,ndpointer(dtype=np.complex64,ndim=3,flags='C_CONTIGUOUS')]
+    SpectralRadar.copyComplexDataContent.argtypes = [ComplexDataHandle,ndpointer(dtype=np.complex64,ndim=1,flags='C_CONTIGUOUS')]
     return SpectralRadar.copyComplexDataContent(ComplexDataSource,DataContent)
 
 def copyRawDataContent(RawDataSource,DataContent):
@@ -470,7 +470,7 @@ def copyRawDataContent(RawDataSource,DataContent):
     like to move the data to a raw pointer rather than a numpy array, take care
     to call the original function.
     """
-    SpectralRadar.copyRawDataContent.argtypes = [RawDataHandle,ndpointer(dtype=np.uint16,ndim=3,flags='C_CONTIGUOUS')]
+    SpectralRadar.copyRawDataContent.argtypes = [RawDataHandle,ndpointer(dtype=np.uint16,ndim=1,flags='C_CONTIGUOUS')]
     SpectralRadar.copyRawDataContent(RawDataSource,DataContent)
 
 def getRawDataShape(rawDataHandle):
