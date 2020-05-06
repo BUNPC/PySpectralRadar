@@ -450,6 +450,7 @@ try:
     def closeProbe(Probe):
         return SpectralRadar.closeProbe(Probe)
 
+    SpectralRadar.copyComplexDataContent.argtypes = [ComplexDataHandle,ndpointer(dtype=np.complex64,ndim=3,flags='C_CONTIGUOUS')]    
     def copyComplexDataContent(ComplexDataSource,DataContent):
         """
         Copies complex processed data out of the ComplexDataSource and into the
@@ -459,9 +460,9 @@ try:
         like to move the data to a raw pointer rather than a numpy array, take care
         to call the original function.
         """
-        SpectralRadar.copyComplexDataContent.argtypes = [ComplexDataHandle,ndpointer(dtype=np.complex64,ndim=3,flags='C_CONTIGUOUS')]
         return SpectralRadar.copyComplexDataContent(ComplexDataSource,DataContent)
 
+    SpectralRadar.copyRawDataContent.argtypes = [RawDataHandle,ndpointer(dtype=np.uint16,ndim=3,flags='C_CONTIGUOUS')]
     def copyRawDataContent(RawDataSource,DataContent):
         """
         Copies raw data out of the RawDataSource and into the numpy
@@ -471,7 +472,6 @@ try:
         like to move the data to a raw pointer rather than a numpy array, take care
         to call the original function.
         """
-        SpectralRadar.copyRawDataContent.argtypes = [RawDataHandle,ndpointer(dtype=np.uint16,ndim=3,flags='C_CONTIGUOUS')]
         SpectralRadar.copyRawDataContent(RawDataSource,DataContent)
 
     def getRawDataShape(rawDataHandle):
